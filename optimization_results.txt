@@ -3,9 +3,9 @@ Database Optimization Results
 Query: Male employees with last name starting with 'F'
 Results count: 100 employees
 
-BEFORE optimization: 0.0919 seconds
-AFTER optimization:  0.0528 seconds
-Performance improvement: +42.5%
+BEFORE optimization: 0.0921 seconds
+AFTER optimization:  0.0492 seconds
+Performance improvement: +46.5%
 
 Optimization details:
 - Created index on gender column

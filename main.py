@@ -115,7 +115,7 @@ def mode_5(db_manager: DatabaseManager):
         
         print(f"\n Execution time: {execution_time:.4f} seconds")
         
-        with open("query_time_before_optimization.txt", "w") as f:
+        with open("query_time_before_optimization.txt", "w", encoding="utf-8") as f:
             f.write(f"{execution_time:.4f}")
             
     except Exception as e:
@@ -157,7 +157,7 @@ def mode_6(db_manager: DatabaseManager):
             improvement = ((time_before - time_after) / time_before) * 100
             print(f"   Performance improvement: {improvement:+.1f}%")
         
-        with open("optimization_results.txt", "w") as f:
+        with open("optimization_results.txt", "w", encoding="utf-8") as f:
             f.write("Database Optimization Results\n")
             f.write("=" * 40 + "\n")
             f.write("Query: Male employees with last name starting with 'F'\n")

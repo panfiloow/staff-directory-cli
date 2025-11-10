@@ -466,7 +466,7 @@ class DatabaseManager:
                 for sql in drop_indexes_sql:
                     try:
                         conn.execute(sa.text(sql))
-                    except:
+                    except:  # noqa
                         pass
                 
                 print("   Creating optimized composite index...")
