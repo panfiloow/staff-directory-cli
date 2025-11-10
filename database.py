@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any, Dict, List
 from sqlalchemy.exc import IntegrityError
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
@@ -94,3 +95,94 @@ class DatabaseManager:
         print(f"   Birth Date: {db_employee.birth_date}")
         print(f"   Gender: {db_employee.gender}")
         print(f"   Age: {employee.calculate_age()} years")
+
+    
+    def get_all_employees_unique_sorted(self) -> List[Dict[str, Any]]:
+        """
+        Получает всех сотрудников с уникальным ФИО+дата, отсортированных по ФИО.
+        Режим 3: Вывод всех уникальных сотрудников
+        
+        Returns:
+            List[Dict]: Список словарей с информацией о сотрудниках
+        """
+        with self.Session() as session:
+            try:
+                # Для SQLite используем оконные функции для получения уникальных записей
+                if config.db_type == "sqlite":
+                    # Создаем подзапрос с номером строки для каждой группы ФИО+дата
+                    subquery = session.query(
+                        EmployeeDB.id,
+                        EmployeeDB.full_name,
+                        EmployeeDB.birth_date,
+                        EmployeeDB.gender,
+                        sa.func.row_number().over(
+                            partition_by=[EmployeeDB.full_name, EmployeeDB.birth_date],
+                            order_by=EmployeeDB.id
+                        ).label('row_num')
+                    ).subquery()
+                    
+                    db_employees = session.query(
+                        subquery.c.id,
+                        subquery.c.full_name,
+                        subquery.c.birth_date,
+                        subquery.c.gender
+                    ).filter(
+                        subquery.c.row_num == 1
+                    ).order_by(
+                        subquery.c.full_name
+                    ).all()
+                    
+                else:
+                    # Для PostgreSQL и других СУБД можно использовать DISTINCT ON
+                    db_employees = session.query(EmployeeDB).distinct(
+                        EmployeeDB.full_name, 
+                        EmployeeDB.birth_date
+                    ).order_by(
+                        EmployeeDB.full_name, 
+                        EmployeeDB.birth_date
+                    ).all()
+                
+                result = []
+                for emp in db_employees:
+                    employee_obj = Employee.from_db_model(emp) if hasattr(emp, 'id') else Employee(
+                        full_name=emp.full_name,
+                        birth_date=emp.birth_date,
+                        gender=emp.gender,
+                        id=emp.id
+                    )
+                    
+                    result.append({
+                        'full_name': employee_obj.full_name,
+                        'birth_date': employee_obj.birth_date.strftime('%Y-%m-%d'),
+                        'gender': employee_obj.gender,
+                        'age': employee_obj.calculate_age()
+                    })
+                
+                return result
+                
+            except Exception as e:
+                raise Exception(f"Error fetching unique employees: {e}")
+            
+    def print_employees_table(self, employees: List[Dict[str, Any]]):
+        """
+        Форматированный вывод таблицы сотрудников
+        
+        Args:
+            employees: Список сотрудников для вывода
+        """
+        if not employees:
+            print("No employees found in database")
+            return
+        
+        print(f"Found {len(employees)} unique employees:")
+        print()
+        
+        header = f"{'Full Name':<30} {'Birth Date':<12} {'Gender':<8} {'Age':<4}"
+        print(header)
+        print("-" * 60)
+        
+        for emp in employees:
+            print(f"{emp['full_name']:<30} {emp['birth_date']:<12} {emp['gender']:<8} {emp['age']:<4}")
+        
+        print("-" * 60)
+        print(f"Total: {len(employees)} employees")

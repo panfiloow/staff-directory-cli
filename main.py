@@ -52,6 +52,19 @@ def mode_2(args, db_manager):
     except Exception as e:
         print(f"Error creating employee: {e}")
 
+
+def mode_3(db_manager: DatabaseManager):
+    """Режим 3: Вывод всех уникальных сотрудников"""
+    print("🔄 Fetching all unique employees (sorted by full name)...")
+    
+    try:
+        employees = db_manager.get_all_employees_unique_sorted()
+        db_manager.print_employees_table(employees)
+        
+    except Exception as e:
+        print(f"❌ Error fetching employees: {e}")
+
+
 def main():
     """
     Главная функция приложения.
@@ -70,6 +83,9 @@ def main():
         
         elif mode == "2":
             mode_2(sys.argv, db_manager)
+        
+        elif mode == "3":
+            mode_3(db_manager)
         
     except Exception as e:
         print(f"💥 Application error: {e}")
