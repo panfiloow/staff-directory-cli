@@ -16,6 +16,8 @@ class DatabaseConfig:
         """Возвращает строку подключения в зависимости от типа БД"""
         if self.db_type == "sqlite":
             return f"sqlite:///{self.database}"
+        elif self.db_type == "postgresql":
+            return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
         else:
             raise ValueError(f"Unsupported database type: {self.db_type}")
 

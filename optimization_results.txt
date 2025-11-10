@@ -1,0 +1,13 @@
+Database Optimization Results
+========================================
+Query: Male employees with last name starting with 'F'
+Results count: 100 employees
+
+BEFORE optimization: 0.0919 seconds
+AFTER optimization:  0.0528 seconds
+Performance improvement: +42.5%
+
+Optimization details:
+- Created index on gender column
+- Created index on full_name column
+- Created composite index on (gender, full_name)

@@ -1,9 +1,15 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from dataclasses import dataclass
+import random
 from typing import Optional
 import sqlalchemy as sa
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column
+
+from data.names_male import MALE_NAMES
+from data.names_female import FEMALE_NAMES
+from data.surnames import SURNAMES
+from data.middle_names import MIDDLE_NAMES_MALE, MIDDLE_NAMES_FEMALE
 
 class Base(DeclarativeBase):
     pass
@@ -109,3 +115,46 @@ class Employee:
         employee.validate()
         
         return employee
+    
+    @classmethod
+    def generate_random_employee(cls, gender: Optional[str] = None):
+        """
+        Генерирует случайного сотрудника 
+        
+        Args:
+            gender: Если None - случайный пол, иначе указанный пол
+            
+        Returns:
+            Employee: Случайно сгенерированный сотрудник
+        """
+        if gender is None:
+            is_male = random.choice([True, False])
+            gender = "Male" if is_male else "Female"
+        else:
+            is_male = gender == "Male"
+        
+        surname_male, surname_female = random.choice(SURNAMES)
+        surname = surname_male if is_male else surname_female
+        
+        if is_male:
+            first_name = random.choice(MALE_NAMES)
+            middle_name = random.choice(MIDDLE_NAMES_MALE)
+        else:
+            first_name = random.choice(FEMALE_NAMES)
+            middle_name = random.choice(MIDDLE_NAMES_FEMALE)
+        
+        full_name = f"{surname} {first_name} {middle_name}"
+        
+        # Генерируем случайную дату рождения (от 18 до 65 лет назад)
+        start_date = date.today().replace(year=date.today().year - 65)
+        end_date = date.today().replace(year=date.today().year - 18)
+        random_days = random.randint(0, (end_date - start_date).days)
+        birth_date = start_date + timedelta(days=random_days)
+        
+        return cls(full_name, birth_date, gender)
+    
+    def __str__(self):
+        return f"Employee({self.full_name}, {self.birth_date}, {self.gender}, Age: {self.calculate_age()})"
+    
+    def __repr__(self):
+        return f"Employee(full_name='{self.full_name}', birth_date={self.birth_date}, gender='{self.gender}')"
